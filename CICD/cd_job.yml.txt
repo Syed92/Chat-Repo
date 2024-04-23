@@ -1,0 +1,35 @@
+name: CD-Job(chat-application-service)
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: AppSRV
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        java-version: 17
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+
+    - name: docker build
+      run: |
+       sudo docker build -t ${{secrets.registry_login_server_dev}}/chat-applicationservice:1.0${{github.run_number}}
+
+    - name : docker login and push to acr
+          sudo docker login ${{secrets.registry_login_server_dev}}  -- usernname ${{secrets.registry_username_dev}}
+          --password ${{secrets.registry_password_server_dev}}
+       sudo docker push ${{secrets.registry_login_server_dev}}/chat-applicationservice:1.0${{github.run_number}}
+
+      
+
+  
